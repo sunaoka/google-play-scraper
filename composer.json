@@ -5,6 +5,8 @@
     "keywords": ["google play", "scraper"],
     "homepage": "https://github.com/cstayyab/google-play-scraper",
     "license": "MIT",
+    "readme": "README.md",
+    "time": "2020-12-23",
     "require": {
         "fabpot/goutte": "^3.0"
     },
@@ -35,5 +37,10 @@
         "phpunit/phpunit": "^5.0",
         "friendsofphp/php-cs-fixer": "^2.0",
         "mockery/mockery": "^1.0"
+    },
+    "support": {
+        "email": "cstayyab@gmail.com",
+        "source": "https://github.com/cstayyab/google-play-scraper",
+        "issues": "https://github.com/cstayyab/google-play-scraper/issues"
     }
 }
