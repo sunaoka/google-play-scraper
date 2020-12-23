@@ -1,17 +1,18 @@
 Google Play Scraper
 ===================
+**This is an *imporoved fork* of [raulr/google-play-scraper](https://github.com/raulr/google-play-scraper) to have more control over the package and future versions**
 
-[![Build Status](https://travis-ci.org/raulr/google-play-scraper.svg?branch=master)](https://travis-ci.org/raulr/google-play-scraper)
+[![Build Status](https://travis-ci.org/cstayyab/google-play-scraper.svg?branch=master)](https://travis-ci.org/cstayyab/google-play-scraper)
 
 A PHP scraper to get app data from Google Play.
 
 Installation
 ------------
 
-Add `raulr/google-play-scraper` as a require dependency in your `composer.json` file:
+Add `cstayyab/google-play-scraper` as a require dependency in your `composer.json` file:
 
 ```sh
-$ composer require raulr/google-play-scraper
+$ composer require cstayyab/google-play-scraper
 ```
 
 Usage
@@ -20,7 +21,7 @@ Usage
 First create a `Scraper` instance.
 
 ```php
-use Raulr\GooglePlayScraper\Scraper;
+use CSTayyab\GooglePlayScraper\Scraper;
 
 $scraper = new Scraper();
 ```
