@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.3.1 (2020-12-23)
+
+### Changed
+
+* Package Information (e.g. author, name etc)
+* Fixed "Error: Call to undefined method Symfony\Component\BrowserKit\Response::getStatus()" using PR https://github.com/raulr/google-play-scraper/pull/36
+
+### Removed
+
+* Dropped Support for PHP 5.6 & PHP 7.0
+
 ## 0.3.0 (2019-06-16)
 
 ### Changed
