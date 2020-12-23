@@ -1,9 +1,9 @@
 {
-    "name": "raulr/google-play-scraper",
+    "name": "cstayyab/google-play-scraper",
     "type": "library",
     "description": "A PHP scraper to get app data from Google Play",
     "keywords": ["google play", "scraper"],
-    "homepage": "https://github.com/raulr/google-play-scraper",
+    "homepage": "https://github.com/cstayyab/google-play-scraper",
     "license": "MIT",
     "require": {
         "fabpot/goutte": "^3.0"
@@ -12,16 +12,21 @@
         {
             "name": "Raul Rodriguez",
             "email": "raul@raulr.net"
+        },
+        {
+            "name": "Muhammad Tayyab Sheikh",
+            "email": "cstayyab@gmail.com",
+            "homepage": "https://cstayyab.com"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Raulr\\GooglePlayScraper\\": "src/"
+            "CSTayyab\\GooglePlayScraper\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Raulr\\GooglePlayScraper\\Tests\\": "tests/"
+            "CSTayyab\\GooglePlayScraper\\Tests\\": "tests/"
         }
     },
     "require-dev": {

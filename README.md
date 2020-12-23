@@ -110,7 +110,7 @@ Returns an array with the existing categories in Google Play.
 #### Example
 
 ```php
-use Raulr\GooglePlayScraper\Scraper;
+use CSTayyab\GooglePlayScraper\Scraper;
 
 $scraper = new Scraper();
 $categories = $scraper->getCategories();

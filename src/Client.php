@@ -1,6 +1,6 @@
 <?php
 
-namespace Raulr\GooglePlayScraper;
+namespace CSTayyab\GooglePlayScraper;
 
 use Goutte\Client as BaseClient;
 use Symfony\Component\BrowserKit\Response;

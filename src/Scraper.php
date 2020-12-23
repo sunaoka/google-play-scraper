@@ -1,11 +1,11 @@
 <?php
 
-namespace Raulr\GooglePlayScraper;
+namespace CSTayyab\GooglePlayScraper;
 
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Symfony\Component\DomCrawler\Crawler;
-use Raulr\GooglePlayScraper\Exception\RequestException;
-use Raulr\GooglePlayScraper\Exception\NotFoundException;
+use CSTayyab\GooglePlayScraper\Exception\RequestException;
+use CSTayyab\GooglePlayScraper\Exception\NotFoundException;
 
 /**
  * @author Raul Rodriguez <raul@raulr.net>

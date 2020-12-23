@@ -1,6 +1,6 @@
 <?php
 
-namespace Raulr\GooglePlayScraper\Tests;
+namespace CSTayyab\GooglePlayScraper\Tests;
 
 use Mockery as m;
 use GuzzleHttp\Client;
@@ -30,7 +30,7 @@ class ScraperTest extends \PHPUnit_Framework_TestCase
             $guzzleOptions['handler'] = $handler;
         }
         $guzzleClient = new Client($guzzleOptions);
-        $scraper = m::mock('Raulr\GooglePlayScraper\Scraper', array($guzzleClient))->makePartial();
+        $scraper = m::mock('CSTayyab\GooglePlayScraper\Scraper', array($guzzleClient))->makePartial();
 
         return $scraper;
     }
@@ -111,7 +111,7 @@ class ScraperTest extends \PHPUnit_Framework_TestCase
         ));
         $handler = HandlerStack::create($mock);
         $scraper = $this->getScraper($handler);
-        $this->setExpectedException('Raulr\GooglePlayScraper\Exception\NotFoundException');
+        $this->setExpectedException('CSTayyab\GooglePlayScraper\Exception\NotFoundException');
         $app = $scraper->getApp('non.existing.app');
     }
 
