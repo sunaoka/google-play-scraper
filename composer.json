@@ -10,13 +10,15 @@
     },
     "authors": [
         {
-            "name": "Raul Rodriguez",
-            "email": "raul@raulr.net"
-        },
-        {
             "name": "Muhammad Tayyab Sheikh",
             "email": "cstayyab@gmail.com",
-            "homepage": "https://cstayyab.com"
+            "homepage": "https://cstayyab.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Raul Rodriguez",
+            "email": "raul@raulr.net",
+            "role": "Ex-Maintainer"
         }
     ],
     "autoload": {
