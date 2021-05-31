@@ -1,17 +1,9 @@
 {
     "name": "sunaoka/google-play-scraper",
-    "type": "library",
     "description": "A PHP scraper to get app data from Google Play",
     "keywords": ["google play", "scraper"],
-    "homepage": "https://github.com/sunaoka/google-play-scraper",
+    "type": "library",
     "license": "MIT",
-    "readme": "README.md",
-    "time": "2020-12-23",
-    "require": {
-        "php": "^8.0",
-        "ext-dom": "*",
-        "fabpot/goutte": "^4.0"
-    },
     "authors": [
         {
             "name": "sunaoka",
@@ -30,6 +22,21 @@
             "role": "Ex-Maintainer"
         }
     ],
+    "require": {
+        "php": "^8.0",
+        "ext-dom": "*",
+        "fabpot/goutte": "^4.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9.5"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
     "autoload": {
         "psr-4": {
             "Sunaoka\\GooglePlayScraper\\": "src/"
@@ -39,15 +46,5 @@
         "psr-4": {
             "Sunaoka\\GooglePlayScraper\\Tests\\": "tests/"
         }
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "friendsofphp/php-cs-fixer": "^3.0",
-        "mockery/mockery": "^1.4"
-    },
-    "support": {
-        "email": "sunaoka@pocari.org",
-        "source": "https://github.com/sunaoka/google-play-scraper",
-        "issues": "https://github.com/sunaoka/google-play-scraper/issues"
     }
 }
