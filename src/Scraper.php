@@ -1,9 +1,9 @@
 <?php
 
-namespace CSTayyab\GooglePlayScraper;
+namespace Sunaoka\GooglePlayScraper;
 
-use CSTayyab\GooglePlayScraper\Exception\NotFoundException;
-use CSTayyab\GooglePlayScraper\Exception\RequestException;
+use Sunaoka\GooglePlayScraper\Exception\NotFoundException;
+use Sunaoka\GooglePlayScraper\Exception\RequestException;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

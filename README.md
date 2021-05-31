@@ -1,18 +1,18 @@
 Google Play Scraper
 ===================
-**This is an *imporoved fork* of [raulr/google-play-scraper](https://github.com/raulr/google-play-scraper) to have more control over the package and future versions**
+**This is an *imporoved fork* of [cstayyab/google-play-scraper](https://github.com/cstayyab/google-play-scraper) to have more control over the package and future versions**
 
-[![Build Status](https://travis-ci.org/cstayyab/google-play-scraper.svg?branch=master)](https://travis-ci.org/cstayyab/google-play-scraper)
+[![Build Status](https://travis-ci.org/sunaoka/google-play-scraper.svg?branch=master)](https://travis-ci.org/cstayyab/google-play-scraper)
 
 A PHP scraper to get app data from Google Play.
 
 Installation
 ------------
 
-Add `cstayyab/google-play-scraper` as a require dependency in your `composer.json` file:
+Add `sunaoka/google-play-scraper` as a require dependency in your `composer.json` file:
 
 ```sh
-$ composer require cstayyab/google-play-scraper
+$ composer require sunaoka/google-play-scraper
 ```
 
 Usage
@@ -21,7 +21,7 @@ Usage
 First create a `Scraper` instance.
 
 ```php
-use CSTayyab\GooglePlayScraper\Scraper;
+use Sunaoka\GooglePlayScraper\Scraper;
 
 $scraper = new Scraper();
 ```
@@ -110,7 +110,7 @@ Returns an array with the existing categories in Google Play.
 #### Example
 
 ```php
-use CSTayyab\GooglePlayScraper\Scraper;
+use Sunaoka\GooglePlayScraper\Scraper;
 
 $scraper = new Scraper();
 $categories = $scraper->getCategories();

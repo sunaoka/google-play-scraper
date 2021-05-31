@@ -1,6 +1,6 @@
 <?php
 
-namespace CSTayyab\GooglePlayScraper\Exception;
+namespace Sunaoka\GooglePlayScraper\Exception;
 
 /**
  * @author Raul Rodriguez <raul@raulr.net>

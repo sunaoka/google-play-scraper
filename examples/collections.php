@@ -2,7 +2,7 @@
 
 include __DIR__.'/../vendor/autoload.php';
 
-use CSTayyab\GooglePlayScraper\Scraper;
+use Sunaoka\GooglePlayScraper\Scraper;
 
 $scraper = new Scraper();
 

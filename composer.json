@@ -1,9 +1,9 @@
 {
-    "name": "cstayyab/google-play-scraper",
+    "name": "sunaoka/google-play-scraper",
     "type": "library",
     "description": "A PHP scraper to get app data from Google Play",
     "keywords": ["google play", "scraper"],
-    "homepage": "https://github.com/cstayyab/google-play-scraper",
+    "homepage": "https://github.com/sunaoka/google-play-scraper",
     "license": "MIT",
     "readme": "README.md",
     "time": "2020-12-23",
@@ -14,10 +14,15 @@
     },
     "authors": [
         {
+            "name": "sunaoka",
+            "email": "sunaoka@pocari.org",
+            "role": "Developer"
+        },
+        {
             "name": "Muhammad Tayyab Sheikh",
             "email": "cstayyab@gmail.com",
             "homepage": "https://cstayyab.com",
-            "role": "Developer"
+            "role": "Ex-Maintainer"
         },
         {
             "name": "Raul Rodriguez",
@@ -27,12 +32,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "CSTayyab\\GooglePlayScraper\\": "src/"
+            "Sunaoka\\GooglePlayScraper\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "CSTayyab\\GooglePlayScraper\\Tests\\": "tests/"
+            "Sunaoka\\GooglePlayScraper\\Tests\\": "tests/"
         }
     },
     "require-dev": {
@@ -41,8 +46,8 @@
         "mockery/mockery": "^1.4"
     },
     "support": {
-        "email": "cstayyab@gmail.com",
-        "source": "https://github.com/cstayyab/google-play-scraper",
-        "issues": "https://github.com/cstayyab/google-play-scraper/issues"
+        "email": "sunaoka@pocari.org",
+        "source": "https://github.com/sunaoka/google-play-scraper",
+        "issues": "https://github.com/sunaoka/google-play-scraper/issues"
     }
 }

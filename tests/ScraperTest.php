@@ -1,9 +1,9 @@
 <?php
 
-namespace CSTayyab\GooglePlayScraper\Tests;
+namespace Sunaoka\GooglePlayScraper\Tests;
 
-use CSTayyab\GooglePlayScraper\Exception\NotFoundException;
-use CSTayyab\GooglePlayScraper\Scraper;
+use Sunaoka\GooglePlayScraper\Exception\NotFoundException;
+use Sunaoka\GooglePlayScraper\Scraper;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
