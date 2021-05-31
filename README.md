@@ -2,7 +2,7 @@ Google Play Scraper
 ===================
 **This is an *imporoved fork* of [cstayyab/google-play-scraper](https://github.com/cstayyab/google-play-scraper) to have more control over the package and future versions**
 
-[![Build Status](https://travis-ci.org/sunaoka/google-play-scraper.svg?branch=master)](https://travis-ci.org/cstayyab/google-play-scraper)
+[![Build Status](https://travis-ci.org/sunaoka/google-play-scraper.svg?branch=master)](https://travis-ci.org/sunaoka/google-play-scraper)
 
 A PHP scraper to get app data from Google Play.
 

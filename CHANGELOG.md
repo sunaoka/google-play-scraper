@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 0.4.0 (2021-05-31)
+
+### Changed
+
+* Package Information (e.g. author, name etc)
+* Goutte 4.0
+* PHPUnit 9.5
+* PHP CS Fixer 3.0
+
+### Removed
+
+* Dropped Support for PHP 7.x
+
 ## 0.3.1 (2020-12-23)
 
 ### Changed
