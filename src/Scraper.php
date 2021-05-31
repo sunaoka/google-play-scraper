@@ -2,68 +2,65 @@
 
 namespace CSTayyab\GooglePlayScraper;
 
-use GuzzleHttp\ClientInterface as GuzzleClientInterface;
-use Symfony\Component\DomCrawler\Crawler;
-use CSTayyab\GooglePlayScraper\Exception\RequestException;
 use CSTayyab\GooglePlayScraper\Exception\NotFoundException;
+use CSTayyab\GooglePlayScraper\Exception\RequestException;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @author Raul Rodriguez <raul@raulr.net>
  */
 class Scraper
 {
-    const BASE_URL = 'https://play.google.com';
+    protected const BASE_URL = 'https://play.google.com';
 
-    protected $client;
-    protected $delay = 1000;
-    protected $lastRequestTime;
-    protected $lang = 'en';
-    protected $country = 'us';
+    protected Client $client;
+    protected int $delay = 1000;
+    protected float $lastRequestTime;
+    protected string $lang = 'en';
+    protected string $country = 'us';
 
-    public function __construct(GuzzleClientInterface $guzzleClient = null)
+    public function __construct(HttpClientInterface $client = null)
     {
-        $this->client = new Client();
-        if ($guzzleClient) {
-            $this->client->setClient($guzzleClient);
-        }
+        $this->client = new Client($client);
     }
 
-    public function setDelay($delay)
+    public function setDelay($delay): void
     {
-        $this->delay = intval($delay);
+        $this->delay = (int)$delay;
     }
 
-    public function getDelay()
+    public function getDelay(): int
     {
         return $this->delay;
     }
 
-    public function setDefaultLang($lang)
+    public function setDefaultLang($lang): void
     {
         $this->lang = $lang;
     }
 
-    public function getDefaultLang()
+    public function getDefaultLang(): string
     {
         return $this->lang;
     }
 
-    public function setDefaultCountry($country)
+    public function setDefaultCountry($country): void
     {
         $this->country = $country;
     }
 
-    public function getDefaultCountry()
+    public function getDefaultCountry(): string
     {
         return $this->country;
     }
 
-    public function getCategories()
+    public function getCategories(): array
     {
-        $crawler = $this->request('apps', array(
+        $crawler = $this->request('apps', [
             'hl' => 'en',
             'gl' => 'us',
-        ));
+        ]);
 
         $collections = $crawler
             ->filter('.LNKfBf a')
@@ -83,54 +80,54 @@ class Scraper
         return $collections;
     }
 
-    public function getCollections()
+    public function getCollections(): array
     {
-        return array(
+        return [
             'topselling_free',
             'topselling_paid',
             'topselling_new_free',
             'topselling_new_paid',
             'topgrossing',
             'movers_shakers',
-        );
+        ];
     }
 
-    public function getApp($id, $lang = null, $country = null)
+    public function getApp($id, $lang = null, $country = null): array
     {
-        $lang = $lang === null ? $this->lang : $lang;
-        $country = $country === null ? $this->country : $country;
+        $lang = $lang ?? $this->lang;
+        $country = $country ?? $this->country;
 
-        $params = array(
+        $params = [
             'id' => $id,
             'hl' => $lang,
             'gl' => $country,
-        );
-        $crawler = $this->request(array('apps', 'details'), $params);
+        ];
+        $crawler = $this->request(['apps', 'details'], $params);
 
-        $info = array(
-            'id' => null,
-            'url' => null,
-            'image' => null,
-            'title' => null,
-            'author' => null,
-            'author_link' => null,
-            'categories' => array(),
-            'price' => null,
-            'screenshots' => array(),
-            'description' => null,
+        $info = [
+            'id'               => null,
+            'url'              => null,
+            'image'            => null,
+            'title'            => null,
+            'author'           => null,
+            'author_link'      => null,
+            'categories'       => [],
+            'price'            => null,
+            'screenshots'      => [],
+            'description'      => null,
             'description_html' => null,
-            'rating' => 0.0,
-            'votes' => 0,
-            'last_updated' => null,
-            'size' => null,
-            'downloads' => null,
-            'version' => null,
-            'supported_os' => null,
-            'content_rating' => null,
-            'whatsnew' => null,
-            'video_link' => null,
-            'video_image' => null,
-        );
+            'rating'           => 0.0,
+            'votes'            => 0,
+            'last_updated'     => null,
+            'size'             => null,
+            'downloads'        => null,
+            'version'          => null,
+            'supported_os'     => null,
+            'content_rating'   => null,
+            'whatsnew'         => null,
+            'video_link'       => null,
+            'video_image'      => null,
+        ];
 
         $info['id'] = $id;
         $info['url'] = $crawler->filter('link[rel="alternate"]')->first()->attr('href');
@@ -147,7 +144,7 @@ class Scraper
         $priceNode = $crawler->filter('[itemprop="offers"] > [itemprop="price"]');
         if ($priceNode->count()) {
             $price = $priceNode->attr('content');
-            $info['price'] = $price == '0' ? null : $price;
+            $info['price'] = $price === '0' ? null : $price;
         }
         $info['screenshots'] = $crawler->filter('[data-screenshot-item-index] img')->each(function ($node) {
             return $this->getAbsoluteUrl($node->attr('data-src') ?: $node->attr('src'));
@@ -157,11 +154,11 @@ class Scraper
         $info['description_html'] = $desc['html'];
         $ratingNode = $crawler->filter('.BHMmbe');
         if ($ratingNode->count()) {
-            $info['rating'] = floatval(str_replace(',', '.', $ratingNode->text()));
+            $info['rating'] = (float)str_replace(',', '.', $ratingNode->text());
         }
         $votesNode = $crawler->filter('.EymY4b > span[aria-label]');
         if ($votesNode->count()) {
-            $info['votes'] = intval(str_replace(array(',', '.', ' '), '', $votesNode->text()));
+            $info['votes'] = (int)str_replace([',', '.', ' '], '', $votesNode->text());
         }
         $extraInfoNodes = $crawler->filter('.hAyfc > .htlgb');
         if ($extraInfoNodes->count() && $extraInfoNodes->first()->filter('div > img:first-child')->count()) {
@@ -176,7 +173,7 @@ class Scraper
                 $info['last_updated'] = $nodeText;
             } elseif (is_null($info['size']) && preg_match('/^[\d,\. ]+[MG]$/', $nodeText)) {
                 $info['size'] = $nodeText;
-            } elseif (is_null($info['downloads']) && preg_match('/^[\d,\.  ]+\+$/', $nodeText)) {
+            } elseif (is_null($info['downloads']) && preg_match('/^[\d,\. ]+\+$/', $nodeText)) {
                 $info['downloads'] = $nodeText;
             } elseif (is_null($info['version']) && preg_match('/^[\d\.]+$/', $nodeText)) {
                 $info['version'] = $nodeText;
@@ -200,10 +197,10 @@ class Scraper
         return $info;
     }
 
-    public function getApps($ids, $lang = null, $country = null)
+    public function getApps($ids, $lang = null, $country = null): array
     {
-        $ids = (array) $ids;
-        $apps = array();
+        $ids = (array)$ids;
+        $apps = [];
 
         foreach ($ids as $id) {
             $apps[$id] = $this->getApp($id, $lang, $country);
@@ -212,10 +209,10 @@ class Scraper
         return $apps;
     }
 
-    public function getListChunk($collection, $category = null, $start = 0, $num = 60, $lang = null, $country = null)
+    public function getListChunk($collection, $category = null, $start = 0, $num = 60, $lang = null, $country = null): array
     {
-        $lang = $lang === null ? $this->lang : $lang;
-        $country = $country === null ? $this->country : $country;
+        $lang = $lang ?? $this->lang;
+        $country = $country ?? $this->country;
 
         if (!is_int($start)) {
             throw new \InvalidArgumentException('"start" must be an integer');
@@ -230,73 +227,72 @@ class Scraper
             throw new \RangeException('"num" must be a number between 0 and 120');
         }
 
-        $path = array('apps');
+        $path = ['apps'];
         if ($category) {
             array_push($path, 'category', $category);
         }
         array_push($path, 'collection', $collection);
-        $params = array(
-            'hl' => $lang,
-            'gl' => $country,
+        $params = [
+            'hl'    => $lang,
+            'gl'    => $country,
             'start' => $start,
-            'num' => $num,
-        );
+            'num'   => $num,
+        ];
         $crawler = $this->request($path, $params);
 
         return $this->parseAppList($crawler);
     }
 
-    public function getList($collection, $category = null, $lang = null, $country = null)
+    public function getList($collection, $category = null, $lang = null, $country = null): array
     {
-        $lang = $lang === null ? $this->lang : $lang;
-        $country = $country === null ? $this->country : $country;
+        $lang = $lang ?? $this->lang;
+        $country = $country ?? $this->country;
         $start = 0;
         $num = 60;
-        $apps = array();
-        $appsChunk = array();
+        $apps = [];
 
         do {
             $appsChunk = $this->getListChunk($collection, $category, $start, $num, $lang, $country);
             $apps = array_merge($apps, $appsChunk);
             $start += $num;
-        } while (count($appsChunk) == $num && $start <= 180);
+        } while (count($appsChunk) === $num && $start <= 180);
 
         return $apps;
     }
 
-    public function getDetailListChunk($collection, $category = null, $start = 0, $num = 60, $lang = null, $country = null)
+    public function getDetailListChunk($collection, $category = null, $start = 0, $num = 60, $lang = null, $country = null): array
     {
         $apps = $this->getListChunk($collection, $category, $start, $num, $lang, $country);
-        $ids = array_map(function ($app) {
+        $ids = array_map(static function ($app) {
             return $app['id'];
         }, $apps);
 
         return $this->getApps($ids);
     }
 
-    public function getDetailList($collection, $category = null, $lang = null, $country = null)
+    public function getDetailList($collection, $category = null, $lang = null, $country = null): array
     {
         $apps = $this->getList($collection, $category, $lang, $country);
-        $ids = array_map(function ($app) {
+        $ids = array_map(static function ($app) {
             return $app['id'];
         }, $apps);
 
         return $this->getApps($ids);
     }
 
-    public function getSearch($query, $price = 'all', $rating = 'all', $lang = null, $country = null)
+    public function getSearch($query, $price = 'all', $rating = 'all', $lang = null, $country = null): array
     {
-        $lang = $lang === null ? $this->lang : $lang;
-        $country = $country === null ? $this->country : $country;
-        $priceValues = array(
-            'all' => null,
+        $lang = $lang ?? $this->lang;
+        $country = $country ?? $this->country;
+        $priceValues = [
+            'all'  => null,
             'free' => 1,
             'paid' => 2,
-        );
-        $ratingValues = array(
+        ];
+        $ratingValues = [
             'all' => null,
-            '4+' => 1,
-        );
+            '4+'  => 1,
+        ];
 
         if (!is_string($query) || empty($query)) {
             throw new \InvalidArgumentException('"query" must be a non empty string');
@@ -305,23 +301,22 @@ class Scraper
         if (array_key_exists($price, $priceValues)) {
             $price = $priceValues[$price];
         } else {
-            throw new \InvalidArgumentException('"price" must contain one of the following values: '.implode(', ', array_keys($priceValues)));
+            throw new \InvalidArgumentException('"price" must contain one of the following values: ' . implode(', ', array_keys($priceValues)));
         }
 
         if (array_key_exists($rating, $ratingValues)) {
             $rating = $ratingValues[$rating];
         } else {
-            throw new \InvalidArgumentException('"rating" must contain one of the following values: '.implode(', ', array_keys($ratingValues)));
+            throw new \InvalidArgumentException('"rating" must contain one of the following values: ' . implode(', ', array_keys($ratingValues)));
         }
 
-        $apps = array();
-        $path = array('search');
-        $params = array(
-            'q' => $query,
-            'c' => 'apps',
+        $path = ['search'];
+        $params = [
+            'q'  => $query,
+            'c'  => 'apps',
             'hl' => $lang,
             'gl' => $country,
-        );
+        ];
         if ($price) {
             $params['price'] = $price;
         }
@@ -333,17 +328,17 @@ class Scraper
         return $this->parseSearchAppList($crawler);
     }
 
-    public function getDetailSearch($query, $price = 'all', $rating = 'all', $lang = null, $country = null)
+    public function getDetailSearch($query, $price = 'all', $rating = 'all', $lang = null, $country = null): array
     {
         $apps = $this->getSearch($query, $price, $rating, $lang, $country);
-        $ids = array_map(function ($app) {
+        $ids = array_map(static function ($app) {
             return $app['id'];
         }, $apps);
 
         return $this->getApps($ids);
     }
 
-    protected function request($path, array $params = array())
+    protected function request($path, array $params = []): Crawler
     {
         // handle delay
         if (!empty($this->delay) && !empty($this->lastRequestTime)) {
@@ -358,51 +353,51 @@ class Scraper
             $path = implode('/', $path);
         }
         $path = ltrim($path, '/');
-        $path = rtrim('/store/'.$path, '/');
-        $url = self::BASE_URL.$path;
+        $path = rtrim('/store/' . $path, '/');
+        $url = self::BASE_URL . $path;
         $query = http_build_query($params);
         if ($query) {
-            $url .= '?'.$query;
+            $url .= '?' . $query;
         }
         $crawler = $this->client->request('GET', $url);
         $status_code = $this->client->getResponse()->getStatusCode();
-        if ($status_code == 404) {
+        if ($status_code === 404) {
             throw new NotFoundException('Requested resource not found');
-        } elseif ($status_code != 200) {
+        } elseif ($status_code !== 200) {
             throw new RequestException(sprintf('Request failed with "%d" status code', $status_code), $status_code);
         }
 
         return $crawler;
     }
 
-    protected function getAbsoluteUrl($url)
+    protected function getAbsoluteUrl($url): string
     {
         $urlParts = parse_url($url);
         $baseParts = parse_url(self::BASE_URL);
         $absoluteParts = array_merge($baseParts, $urlParts);
 
-        $absoluteUrl = $absoluteParts['scheme'].'://'.$absoluteParts['host'];
+        $absoluteUrl = $absoluteParts['scheme'] . '://' . $absoluteParts['host'];
         if (isset($absoluteParts['path'])) {
             $absoluteUrl .= $absoluteParts['path'];
         } else {
             $absoluteUrl .= '/';
         }
         if (isset($absoluteParts['query'])) {
-            $absoluteUrl .= '?'.$absoluteParts['query'];
+            $absoluteUrl .= '?' . $absoluteParts['query'];
         }
         if (isset($absoluteParts['fragment'])) {
-            $absoluteUrl .= '#'.$absoluteParts['fragment'];
+            $absoluteUrl .= '#' . $absoluteParts['fragment'];
         }
 
         return $absoluteUrl;
     }
 
-    protected function parseAppList(Crawler $crawler)
+    protected function parseAppList(Crawler $crawler): array
     {
         return $crawler->filter('.card')->each(function ($node) {
-            $app = array();
+            $app = [];
             $app['id'] = $node->attr('data-docid');
-            $app['url'] = self::BASE_URL.$node->filter('a')->attr('href');
+            $app['url'] = self::BASE_URL . $node->filter('a')->attr('href');
             $app['title'] = $node->filter('a.title')->attr('title');
             $app['image'] = $this->getAbsoluteUrl($node->filter('img.cover-image')->attr('data-cover-large'));
             $app['author'] = $node->filter('a.subtitle')->attr('title');
@@ -410,7 +405,7 @@ class Scraper
             if (!$ratingNode->count()) {
                 $rating = 0.0;
             } elseif (preg_match('/\d+(\.\d+)?/', $node->filter('.current-rating')->attr('style'), $matches)) {
-                $rating = floatval($matches[0]) * 0.05;
+                $rating = (float)$matches[0] * 0.05;
             } else {
                 throw new \RuntimeException('Error parsing rating');
             }
@@ -429,10 +424,10 @@ class Scraper
         });
     }
 
-    protected function parseSearchAppList(Crawler $crawler)
+    protected function parseSearchAppList(Crawler $crawler): array
     {
         return $crawler->filter('.WHE7ib')->each(function ($node) {
-            $app = array();
+            $app = [];
             $app['url'] = $this->getAbsoluteUrl($node->filter('a.poRVub')->attr('href'));
             $app['id'] = substr($app['url'], strpos($app['url'], '=') + 1);
             $app['title'] = $node->filter('.b8cIId.ReQCgd.Q9MA7b')->attr('title');
@@ -442,7 +437,7 @@ class Scraper
             if (!$ratingNode->count()) {
                 $rating = 0.0;
             } elseif (preg_match('/\d+([.,]\d+)?/', $ratingNode->attr('aria-label'), $matches)) {
-                $rating = floatval(str_replace(',', '.', $matches[0]));
+                $rating = (float)str_replace(',', '.', $matches[0]);
             } else {
                 throw new \RuntimeException('Error parsing rating');
             }
@@ -461,12 +456,12 @@ class Scraper
         });
     }
 
-    protected function cleanDescription(Crawler $descriptionNode)
+    protected function cleanDescription(Crawler $descriptionNode): array
     {
         $descriptionNode->filter('a')->each(function ($node) {
             $domElement = $node->getNode(0);
             $href = $domElement->getAttribute('href');
-            while (strpos($href, 'https://www.google.com/url?q=') === 0) {
+            while (str_starts_with($href, 'https://www.google.com/url?q=')) {
                 $parts = parse_url($href);
                 parse_str($parts['query'], $query);
                 $href = $query['q'];
@@ -476,13 +471,13 @@ class Scraper
         $html = $descriptionNode->html();
         $text = trim($this->convertHtmlToText($descriptionNode->getNode(0)));
 
-        return array(
+        return [
             'html' => $html,
             'text' => $text,
-        );
+        ];
     }
 
-    protected function convertHtmlToText(\DOMNode $node)
+    protected function convertHtmlToText(\DOMNode $node): array|string|null
     {
         if ($node instanceof \DOMText) {
             $text = preg_replace('/\s+/', ' ', $node->wholeText);
@@ -493,29 +488,24 @@ class Scraper
                 $text .= $this->convertHtmlToText($childNode);
             }
 
-            switch ($node->nodeName) {
-                case 'h1':
-                case 'h2':
-                case 'h3':
-                case 'h4':
-                case 'h5':
-                case 'h6':
-                case 'p':
-                case 'ul':
-                case 'div':
-                    $text = "\n\n".$text."\n\n";
-                    break;
-                case 'li':
-                    $text = '- '.$text."\n";
-                    break;
-                case 'br':
-                    $text = $text."\n";
-                    break;
-            }
+            $text = match ($node->nodeName) {
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'div' => "\n\n" . $text . "\n\n",
+                'li' => '- ' . $text . "\n",
+                'br' => $text . "\n",
+                default => $text,
+            };
 
             $text = preg_replace('/\n{3,}/', "\n\n", $text);
         }
 
         return $text;
+    }
+
+    /**
+     * @return Client
+     */
+    public function getClient(): Client
+    {
+        return $this->client;
     }
 }

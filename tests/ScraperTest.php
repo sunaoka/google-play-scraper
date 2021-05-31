@@ -2,186 +2,148 @@
 
 namespace CSTayyab\GooglePlayScraper\Tests;
 
-use Mockery as m;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Middleware;
+use CSTayyab\GooglePlayScraper\Exception\NotFoundException;
+use CSTayyab\GooglePlayScraper\Scraper;
+use Mockery;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 
 /**
  * @author Raul Rodriguez <raul@raulr.net>
  */
-class ScraperTest extends \PHPUnit_Framework_TestCase
+class ScraperTest extends TestCase
 {
-    private $scraper;
-
-    public function tearDown()
+    public function tearDown(): void
     {
-        m::close();
+        Mockery::close();
     }
 
-    public function getScraper(HandlerStack $handler = null)
+    public function getScraper(MockHttpClient $client = null): Mockery\Mock|Scraper
     {
-        $guzzleOptions = array(
-            'defaults' => array('allow_redirects' => false, 'cookies' => true),
-        );
-        if ($handler) {
-            $guzzleOptions['handler'] = $handler;
-        }
-        $guzzleClient = new Client($guzzleOptions);
-        $scraper = m::mock('CSTayyab\GooglePlayScraper\Scraper', array($guzzleClient))->makePartial();
-
-        return $scraper;
+        return Mockery::mock(Scraper::class, [$client])->makePartial();
     }
 
-    public function testSetDelay()
+    public function testSetDelay(): void
     {
         $scraper = $this->getScraper();
         $scraper->setDelay(2000);
-        $this->assertEquals(2000, $scraper->getDelay());
+        self::assertEquals(2000, $scraper->getDelay());
     }
 
-    public function testSetDefaultLang()
+    public function testSetDefaultLang(): void
     {
         $scraper = $this->getScraper();
         $scraper->setDefaultLang('es');
-        $this->assertEquals('es', $scraper->getDefaultLang());
+        self::assertEquals('es', $scraper->getDefaultLang());
     }
 
-    public function testSetDefaultCountry()
+    public function testSetDefaultCountry(): void
     {
         $scraper = $this->getScraper();
         $scraper->setDefaultCountry('fr');
-        $this->assertEquals('fr', $scraper->getDefaultCountry());
+        self::assertEquals('fr', $scraper->getDefaultCountry());
     }
 
-    public function testGetCategories()
+    public function testGetCategories(): void
     {
-        $transactions = array();
-        $history = Middleware::history($transactions);
-        $mock = new MockHandler(array(
-            new Response(200, array('content-type' => 'text/html; charset=utf-8'), file_get_contents(__DIR__.'/resources/categories.html')),
-        ));
-        $handler = HandlerStack::create($mock);
-        $handler->push($history);
-        $scraper = $this->getScraper($handler);
+        $client = new MockHttpClient([new MockResponse(file_get_contents(__DIR__ . '/resources/categories.html'))]);
+        $scraper = $this->getScraper($client);
         $app = $scraper->getCategories();
-        $expected = json_decode(file_get_contents(__DIR__.'/resources/categories.json'), true);
-        $this->assertEquals($expected, $app);
-        $this->assertEquals('https://play.google.com/store/apps?hl=en&gl=us', $transactions[0]['request']->getUri());
+        $expected = json_decode(file_get_contents(__DIR__ . '/resources/categories.json'), true);
+        self::assertEquals($expected, $app);
+        self::assertEquals('https://play.google.com/store/apps?hl=en&gl=us', $scraper->getClient()->getHistory()->current()->getUri());
     }
 
-    public function testGetApp()
+    public function testGetApp(): void
     {
-        $transactions = array();
-        $history = Middleware::history($transactions);
-        $mock = new MockHandler(array(
-            new Response(200, array('content-type' => 'text/html; charset=utf-8'), file_get_contents(__DIR__.'/resources/app1.html')),
-        ));
-        $handler = HandlerStack::create($mock);
-        $handler->push($history);
-        $scraper = $this->getScraper($handler);
+        $client = new MockHttpClient([new MockResponse(file_get_contents(__DIR__ . '/resources/app1.html'))]);
+        $scraper = $this->getScraper($client);
         $app = $scraper->getApp('com.mojang.minecraftpe', 'en', 'us');
-        $expected = json_decode(file_get_contents(__DIR__.'/resources/app1.json'), true);
-        $this->assertEquals($expected, $app);
-        $this->assertEquals('https://play.google.com/store/apps/details?id=com.mojang.minecraftpe&hl=en&gl=us', $transactions[0]['request']->getUri());
+        $expected = json_decode(file_get_contents(__DIR__ . '/resources/app1.json'), true);
+        self::assertEquals($expected, $app);
+        self::assertEquals('https://play.google.com/store/apps/details?id=com.mojang.minecraftpe&hl=en&gl=us', $scraper->getClient()->getHistory()->current()->getUri());
     }
 
-    public function testGetAppIsFree()
+    public function testGetAppIsFree(): void
     {
-        $transactions = array();
-        $history = Middleware::history($transactions);
-        $mock = new MockHandler(array(
-            new Response(200, array('content-type' => 'text/html; charset=utf-8'), file_get_contents(__DIR__.'/resources/app2.html')),
-        ));
-        $handler = HandlerStack::create($mock);
-        $handler->push($history);
-        $scraper = $this->getScraper($handler);
+        $client = new MockHttpClient([new MockResponse(file_get_contents(__DIR__ . '/resources/app2.html'))]);
+        $scraper = $this->getScraper($client);
         $app = $scraper->getApp('com.instagram.android', 'zh', 'cn');
-        $expected = json_decode(file_get_contents(__DIR__.'/resources/app2.json'), true);
-        $this->assertEquals($expected, $app);
-        $this->assertEquals('https://play.google.com/store/apps/details?id=com.instagram.android&hl=zh&gl=cn', $transactions[0]['request']->getUri());
+        $expected = json_decode(file_get_contents(__DIR__ . '/resources/app2.json'), true);
+        self::assertEquals($expected, $app);
+        self::assertEquals('https://play.google.com/store/apps/details?id=com.instagram.android&hl=zh&gl=cn', $scraper->getClient()->getHistory()->current()->getUri());
     }
 
-    public function testGetAppNotFound()
+    public function testGetAppNotFound(): void
     {
-        $mock = new MockHandler(array(
-            new Response(404),
-        ));
-        $handler = HandlerStack::create($mock);
-        $scraper = $this->getScraper($handler);
-        $this->setExpectedException('CSTayyab\GooglePlayScraper\Exception\NotFoundException');
-        $app = $scraper->getApp('non.existing.app');
+        $client = new MockHttpClient([new MockResponse('', ['http_code' => 404])]);
+        $scraper = $this->getScraper($client);
+        $this->expectException(NotFoundException::class);
+        $scraper->getApp('non.existing.app');
     }
 
-    public function testGetApps()
+    public function testGetApps(): void
     {
         $scraper = $this->getScraper();
         $scraper
             ->shouldReceive('getApp')
             ->with('app1_id', null, null)
             ->once()
-            ->andReturn(array('app1_data'));
+            ->andReturn(['app1_data']);
         $scraper
             ->shouldReceive('getApp')
             ->with('app2_id', null, null)
             ->once()
-            ->andReturn(array('app2_data'));
+            ->andReturn(['app2_data']);
 
-        $apps = $scraper->getApps(array('app1_id', 'app2_id'));
-        $expected = array(
-            'app1_id' => array('app1_data'),
-            'app2_id' => array('app2_data'),
-        );
-        $this->assertEquals($expected, $apps);
+        $apps = $scraper->getApps(['app1_id', 'app2_id']);
+        $expected = [
+            'app1_id' => ['app1_data'],
+            'app2_id' => ['app2_data'],
+        ];
+        self::assertEquals($expected, $apps);
     }
 
-    public function testGetListChunk()
+    public function testGetListChunk(): void
     {
-        $transactions = array();
-        $history = Middleware::history($transactions);
-        $mock = new MockHandler(array(
-            new Response(200, array('content-type' => 'text/html; charset=utf-8'), file_get_contents(__DIR__.'/resources/list.html')),
-        ));
-        $handler = HandlerStack::create($mock);
-        $handler->push($history);
-        $scraper = $this->getScraper($handler);
+        $client = new MockHttpClient([new MockResponse(file_get_contents(__DIR__ . '/resources/list.html'))]);
+        $scraper = $this->getScraper($client);
         $list = $scraper->getListChunk('topselling_paid', 'GAME_ARCADE', 0, 2, 'en', 'us');
-        $expected = json_decode(file_get_contents(__DIR__.'/resources/list.json'), true);
-        $this->assertEquals($expected, $list);
-        $this->assertEquals('https://play.google.com/store/apps/category/GAME_ARCADE/collection/topselling_paid?hl=en&gl=us&start=0&num=2', $transactions[0]['request']->getUri());
+        $expected = json_decode(file_get_contents(__DIR__ . '/resources/list.json'), true);
+        self::assertEquals($expected, $list);
+        self::assertEquals('https://play.google.com/store/apps/category/GAME_ARCADE/collection/topselling_paid?hl=en&gl=us&start=0&num=2', $scraper->getClient()->getHistory()->current()->getUri());
     }
 
-    public function testGetListChunkStartNotInt()
+    public function testGetListChunkStartNotInt(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $scraper->getListChunk('topselling_paid', 'GAME_ARCADE', 'zero');
     }
 
-    public function testGetListChunkStartTooBig()
+    public function testGetListChunkStartTooBig(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('RangeException');
+        $this->expectException('RangeException');
         $scraper->getListChunk('topselling_paid', 'GAME_ARCADE', 181);
     }
 
-    public function testGetListChunkNumNotInt()
+    public function testGetListChunkNumNotInt(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $scraper->getListChunk('topselling_paid', 'GAME_ARCADE', 0, 'ten');
     }
 
-    public function testGetListChunkNumTooBig()
+    public function testGetListChunkNumTooBig(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('RangeException');
+        $this->expectException('RangeException');
         $scraper->getListChunk('topselling_paid', 'GAME_ARCADE', 0, 121);
     }
 
-    public function testGetList()
+    public function testGetList(): void
     {
         $expected = range(0, 100);
         $scraper = $this->getScraper();
@@ -197,109 +159,103 @@ class ScraperTest extends \PHPUnit_Framework_TestCase
             ->andReturn(array_slice($expected, 60));
 
         $apps = $scraper->getList('topselling_paid', 'GAME_ARCADE', 'en', 'us');
-        $this->assertEquals($expected, $apps);
+        self::assertEquals($expected, $apps);
     }
 
-    public function testGetDetailListChunk()
+    public function testGetDetailListChunk(): void
     {
-        $expected = array(
-            'app1_id' => array('app1_data'),
-            'app2_id' => array('app2_data'),
-        );
+        $expected = [
+            'app1_id' => ['app1_data'],
+            'app2_id' => ['app2_data'],
+        ];
         $scraper = $this->getScraper();
         $scraper
             ->shouldReceive('getListChunk')
             ->with('topselling_paid', 'GAME_ARCADE', 0, 2, 'en', 'us')
             ->once()
-            ->andReturn(array(array('id' => 'app1_id'), array('id' => 'app2_id')));
+            ->andReturn([['id' => 'app1_id'], ['id' => 'app2_id']]);
         $scraper
             ->shouldReceive('getApps')
-            ->with(array('app1_id', 'app2_id'))
+            ->with(['app1_id', 'app2_id'])
             ->once()
             ->andReturn($expected);
 
         $apps = $scraper->getDetailListChunk('topselling_paid', 'GAME_ARCADE', 0, 2, 'en', 'us');
-        $this->assertEquals($expected, $apps);
+        self::assertEquals($expected, $apps);
     }
 
-    public function testGetDetailList()
+    public function testGetDetailList(): void
     {
-        $expected = array(
-            'app1_id' => array('app1_data'),
-            'app2_id' => array('app2_data'),
-        );
+        $expected = [
+            'app1_id' => ['app1_data'],
+            'app2_id' => ['app2_data'],
+        ];
         $scraper = $this->getScraper();
         $scraper
             ->shouldReceive('getList')
             ->with('topselling_paid', 'GAME_ARCADE', 'en', 'us')
             ->once()
-            ->andReturn(array(array('id' => 'app1_id'), array('id' => 'app2_id')));
+            ->andReturn([['id' => 'app1_id'], ['id' => 'app2_id']]);
         $scraper
             ->shouldReceive('getApps')
-            ->with(array('app1_id', 'app2_id'))
+            ->with(['app1_id', 'app2_id'])
             ->once()
             ->andReturn($expected);
 
         $apps = $scraper->getDetailList('topselling_paid', 'GAME_ARCADE', 'en', 'us');
-        $this->assertEquals($expected, $apps);
+        self::assertEquals($expected, $apps);
     }
 
-    public function testGetSearch()
+    public function testGetSearch(): void
     {
-        $transactions = array();
-        $history = Middleware::history($transactions);
-        $mock = new MockHandler(array(
-            new Response(200, array('content-type' => 'text/html; charset=utf-8'), file_get_contents(__DIR__.'/resources/search.html')),
-        ));
-        $handler = HandlerStack::create($mock);
-        $handler->push($history);
-        $scraper = $this->getScraper($handler);
+        $client = new MockHttpClient([new MockResponse(file_get_contents(__DIR__ . '/resources/search.html'))]);
+        $scraper = $this->getScraper($client);
         $search = $scraper->getSearch('unicorns', 'free', '4+', 'en', 'us');
-        $expected = json_decode(file_get_contents(__DIR__.'/resources/search.json'), true);
-        $this->assertEquals($expected, $search);
-        $this->assertEquals('https://play.google.com/store/search?q=unicorns&c=apps&hl=en&gl=us&price=1&rating=1', $transactions[0]['request']->getUri());
+        $expected = json_decode(file_get_contents(__DIR__ . '/resources/search.json'), true);
+        self::assertEquals($expected, $search);
+        self::assertEquals('https://play.google.com/store/search?q=unicorns&c=apps&hl=en&gl=us&price=1&rating=1', $scraper->getClient()->getHistory()->current()->getUri());
     }
 
-    public function testGetSearchQueryNotString()
+    public function testGetSearchQueryNotString(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $scraper->getSearch(1.23);
     }
 
-    public function testGetSearchPriceInvalid()
+    public function testGetSearchPriceInvalid(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $scraper->getSearch('unicorns', 0);
     }
 
-    public function testGetSearchRatingInvalid()
+    public function testGetSearchRatingInvalid(): void
     {
         $scraper = $this->getScraper();
-        $this->setExpectedException('InvalidArgumentException');
+        $this->expectException('InvalidArgumentException');
         $scraper->getSearch('unicorns', 'all', 0);
     }
 
-    public function testGetDetailSearch()
+    public function testGetDetailSearch(): void
     {
-        $expected = array(
-            'app1_id' => array('app1_data'),
-            'app2_id' => array('app2_data'),
-        );
+        $expected = [
+            'app1_id' => ['app1_data'],
+            'app2_id' => ['app2_data'],
+        ];
         $scraper = $this->getScraper();
         $scraper
             ->shouldReceive('getSearch')
             ->with('unicorns', 'free', '4+', 'en', 'us')
             ->once()
-            ->andReturn(array(array('id' => 'app1_id'), array('id' => 'app2_id')));
+            ->andReturn([['id' => 'app1_id'], ['id' => 'app2_id']]);
         $scraper
             ->shouldReceive('getApps')
-            ->with(array('app1_id', 'app2_id'))
+            ->with(['app1_id', 'app2_id'])
             ->once()
             ->andReturn($expected);
 
         $apps = $scraper->getDetailSearch('unicorns', 'free', '4+', 'en', 'us');
-        $this->assertEquals($expected, $apps);
+        self::assertEquals($expected, $apps);
     }
 }

@@ -7,7 +7,7 @@ use Symfony\Component\BrowserKit\Response;
 
 class Client extends BaseClient
 {
-    protected function filterResponse($response)
+    protected function filterResponse($response): Response
     {
         $content = str_replace(chr(0), '', $response->getContent());
         $newResponse = new Response(
