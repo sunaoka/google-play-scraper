@@ -191,7 +191,7 @@ class Scraper
         $videoNode = $crawler->filter('[data-trailer-url]');
         if ($videoNode->count()) {
             $info['video_link'] = $this->getAbsoluteUrl($videoNode->attr('data-trailer-url'));
-            $info['video_image'] = $this->getAbsoluteUrl($videoNode->parents()->filter('img')->attr('src'));
+            $info['video_image'] = $this->getAbsoluteUrl($videoNode->ancestors()->filter('img')->attr('src'));
         }
 
         return $info;
