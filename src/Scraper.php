@@ -133,7 +133,7 @@ class Scraper
         $info['url'] = $crawler->filter('link[rel="alternate"]')->first()->attr('href');
         $info['image'] = $this->getAbsoluteUrl($crawler->filter('[itemprop="image"]')->attr('src'));
         $info['title'] = $crawler->filter('[itemprop="name"] > span')->text();
-        $authorNode = $crawler->filter('a.hrTbp.R8zArc')->first();
+        $authorNode = $crawler->filter('a[href^="/store/apps/dev"]')->first();
         if ($authorNode->count()) {
             $info['author'] = $authorNode->text();
             $info['author_link'] = $this->getAbsoluteUrl($authorNode->attr('href'));
@@ -149,16 +149,16 @@ class Scraper
         $info['screenshots'] = $crawler->filter('[data-screenshot-item-index] img')->each(function ($node) {
             return $this->getAbsoluteUrl($node->attr('data-src') ?: $node->attr('src'));
         });
-        $desc = $this->cleanDescription($crawler->filter('[itemprop="description"] > span > div'));
+        $desc = $this->cleanDescription($crawler->filter('[data-g-id="description"]'));
         $info['description'] = $desc['text'];
         $info['description_html'] = $desc['html'];
-        $ratingNode = $crawler->filter('.BHMmbe');
+        $ratingNode = $crawler->filter('.TT9eCd');
         if ($ratingNode->count()) {
             $info['rating'] = (float)str_replace(',', '.', $ratingNode->text());
         }
-        $votesNode = $crawler->filter('.EymY4b > span[aria-label]');
+        $votesNode = $crawler->filter('.g1rdde');
         if ($votesNode->count()) {
-            $info['votes'] = (int)str_replace([',', '.', ' '], '', $votesNode->text());
+            $info['votes'] = $votesNode->text();
         }
         $extraInfoNodes = $crawler->filter('.hAyfc > .htlgb');
         if ($extraInfoNodes->count() && $extraInfoNodes->first()->filter('div > img:first-child')->count()) {
@@ -179,10 +179,12 @@ class Scraper
                 $info['version'] = $nodeText;
             } elseif (is_null($info['supported_os']) && preg_match('/^(\d+\.)+\d+.+$/', $nodeText)) {
                 $info['supported_os'] = $nodeText;
-            } elseif (is_null($info['content_rating']) && $node->filter('div > .htlgb > div')->count()) {
-                $info['content_rating'] = $node->filter('div > .htlgb > div')->first()->text();
             }
         });
+        $votesNode = $crawler->filter('[itemprop="contentRating"]');
+        if ($votesNode->count()) {
+            $info['content_rating'] = $votesNode->text();
+        }
         $whatsnewNode = $crawler->filter('[itemprop="description"] > span')->eq(1);
         if ($whatsnewNode->count()) {
             $whatsnew = $this->cleanDescription($whatsnewNode);
@@ -458,16 +460,6 @@ class Scraper
 
     protected function cleanDescription(Crawler $descriptionNode): array
     {
-        $descriptionNode->filter('a')->each(function ($node) {
-            $domElement = $node->getNode(0);
-            $href = $domElement->getAttribute('href');
-            while (str_starts_with($href, 'https://www.google.com/url?q=')) {
-                $parts = parse_url($href);
-                parse_str($parts['query'], $query);
-                $href = $query['q'];
-            }
-            $domElement->setAttribute('href', $href);
-        });
         $html = $descriptionNode->html();
         $text = trim($this->convertHtmlToText($descriptionNode->getNode(0)));
 
